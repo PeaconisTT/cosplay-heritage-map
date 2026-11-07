@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgis/postgis:15-3.4
+    container_name: cosplay_map_db
+    restart: always
+    environment:
+      POSTGRES_USER: cosplay_admin
+      POSTGRES_PASSWORD: cosplay_secure_password_2026
+      POSTGRES_DB: cosplay_map_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-postgis.sql:/docker-entrypoint-initdb.d/init-postgis.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cosplay_admin -d cosplay_map_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
