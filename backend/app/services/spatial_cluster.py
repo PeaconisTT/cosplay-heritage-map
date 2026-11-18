@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import Any, Dict, List, Optional
 from uuid import UUID
@@ -139,12 +140,18 @@ async def get_spatial_clusters(
 
     clusters_output = []
     for row in rows:
+        items = row.items
+        if isinstance(items, str):
+            try:
+                items = json.loads(items)
+            except Exception:
+                items = []
         clusters_output.append({
             "type": row.type,
             "id": row.id,
             "count": row.count,
             "center": {"x": float(row.x), "y": float(row.y)},
-            "items": row.items
+            "items": items
         })
 
     logger.info(f"Phân cụm PostGIS hoàn tất: Tìm thấy {len(clusters_output)} cụm/điểm hiển thị.")

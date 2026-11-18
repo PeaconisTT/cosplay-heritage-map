@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="50%" stop-color="#1e1b4b"/>
+      <stop offset="100%" stop-color="#31102f"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fde68a"/>
+      <stop offset="50%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#ff4757"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="400" fill="url(#bgGrad)"/>
+  <circle cx="300" cy="200" r="135" fill="none" stroke="url(#goldGrad)" stroke-width="1.5" stroke-dasharray="6 6" opacity="0.65"/>
+  <circle cx="300" cy="200" r="105" fill="none" stroke="#94a3b8" stroke-width="0.8" opacity="0.35"/>
+  <polygon points="300,75 312,188 425,200 312,212 300,325 288,212 175,200 288,188" fill="url(#goldGrad)" opacity="0.85"/>
+  <circle cx="300" cy="200" r="14" fill="#0f172a" stroke="url(#goldGrad)" stroke-width="3"/>
+  <circle cx="140" cy="95" r="2.5" fill="#fde68a" opacity="0.8"/>
+  <circle cx="470" cy="110" r="3" fill="#ff4757" opacity="0.8"/>
+  <circle cx="450" cy="305" r="2" fill="#fde68a" opacity="0.7"/>
+  <circle cx="155" cy="295" r="2.5" fill="#38bdf8" opacity="0.7"/>
+  <text x="300" y="365" text-anchor="middle" fill="#cbd5e1" font-family="sans-serif" font-size="13" letter-spacing="4" opacity="0.85">COSPLAY HERITAGE ARCHIVE</text>
+</svg>

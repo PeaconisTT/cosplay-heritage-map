@@ -5,6 +5,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.router import api_router
 
+import os
+from fastapi.staticfiles import StaticFiles
+
+# Tạo sẵn thư mục nếu chưa có và mount static files
+os.makedirs(os.path.join("static", "uploads"), exist_ok=True)
+
 # Thiết lập Logger cho Backend
 logging.basicConfig(
     level=logging.INFO,
@@ -30,6 +36,7 @@ app = FastAPI(
     redoc_url="/redoc",
     lifespan=lifespan
 )
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Cấu hình CORS Middleware (Cho phép kết nối từ Frontend)
 origins = [
