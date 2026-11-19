@@ -14,6 +14,7 @@ async def get_spatial_clusters(
     eps: float = 80.0,
     min_points: int = 2,
     event_id: Optional[UUID] = None,
+    event_name: Optional[str] = None,
     work_title: Optional[str] = None,
     alias_first_letter: Optional[str] = None
 ) -> List[Dict[str, Any]]:
@@ -24,7 +25,8 @@ async def get_spatial_clusters(
         db: AsyncSession CSDL PostgreSQL.
         eps: Bán kính khoảng cách tối đa giữa các điểm để gộp cụm (đơn vị pixel 2D).
         min_points: Số lượng điểm tối thiểu để cấu thành một Cụm tròn (Cluster).
-        event_id: (Tùy chọn) Lọc theo ID sự kiện (Dành cho Map Sự kiện).
+        event_id: (Tùy chọn) Lọc theo ID sự kiện.
+        event_name: (Tùy chọn) Lọc theo tên sự kiện Fest.
         work_title: (Tùy chọn) Lọc theo tên tác phẩm nguyên tác (Dành cho Map IP).
         alias_first_letter: (Tùy chọn) Lọc theo chữ cái đầu nghệ danh (Dành cho Map Cosplayer A-Z).
 
@@ -41,6 +43,10 @@ async def get_spatial_clusters(
     if event_id:
         where_clauses.append("event_id = :event_id")
         params["event_id"] = str(event_id)
+
+    if event_name:
+        where_clauses.append("event_name = :event_name")
+        params["event_name"] = event_name
 
     if work_title:
         where_clauses.append("work_title = :work_title")
@@ -60,8 +66,13 @@ async def get_spatial_clusters(
                 cosplayer_name,
                 character_name,
                 work_title,
+                work_category,
+                message,
+                event_name,
+                event_year,
                 media_url,
                 is_verified,
+                digital_signature,
                 virtual_coord,
                 ST_X(virtual_coord) AS x,
                 ST_Y(virtual_coord) AS y,
@@ -82,7 +93,13 @@ async def get_spatial_clusters(
                         'cosplayer_name', cosplayer_name,
                         'character_name', character_name,
                         'work_title', work_title,
+                        'work_category', work_category,
+                        'message', message,
+                        'event_name', event_name,
+                        'event_year', event_year,
                         'media_url', media_url,
+                        'signature_url', digital_signature->>'signature_url',
+                        'pixel_pin_id', digital_signature->>'pixel_pin_id',
                         'is_verified', is_verified,
                         'virtual_coord', json_build_object('x', x, 'y', y)
                     )
@@ -98,7 +115,12 @@ async def get_spatial_clusters(
                 cosplayer_name,
                 character_name,
                 work_title,
+                work_category,
+                message,
+                event_name,
+                event_year,
                 media_url,
+                digital_signature,
                 is_verified,
                 x,
                 y
@@ -127,7 +149,13 @@ async def get_spatial_clusters(
                     'cosplayer_name', cosplayer_name,
                     'character_name', character_name,
                     'work_title', work_title,
+                    'work_category', work_category,
+                    'message', message,
+                    'event_name', event_name,
+                    'event_year', event_year,
                     'media_url', media_url,
+                    'signature_url', digital_signature->>'signature_url',
+                    'pixel_pin_id', digital_signature->>'pixel_pin_id',
                     'is_verified', is_verified,
                     'virtual_coord', json_build_object('x', x, 'y', y)
                 )

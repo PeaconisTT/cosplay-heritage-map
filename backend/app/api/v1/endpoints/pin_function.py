@@ -1,3 +1,4 @@
+import base64
 import hashlib
 import io
 import os
@@ -23,11 +24,13 @@ router = APIRouter()
 
 UPLOAD_DIR = os.path.join("static", "uploads")
 PLACEHOLDER_DIR = os.path.join("static", "placeholders")
+SIGNATURE_DIR = os.path.join("static", "signatures")
 DEFAULT_PLACEHOLDER_FILENAME = "default-artistic-pin.svg"
 DEFAULT_PLACEHOLDER_URL = f"/static/placeholders/{DEFAULT_PLACEHOLDER_FILENAME}"
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(PLACEHOLDER_DIR, exist_ok=True)
+os.makedirs(SIGNATURE_DIR, exist_ok=True)
 
 
 def ensure_artistic_placeholder() -> None:
@@ -151,9 +154,24 @@ async def upload_cosplay_pin(
         # 3. Khởi tạo đối tượng PostGIS Geometry Point (SRID=0 Cartesian 2D)
         geometry_point = WKTElement(f"POINT({coord_x} {coord_y})", srid=0)
 
+        # Lưu file ảnh chữ ký tay PNG
+        try:
+            signature_clean = signature_canvas
+            if "," in signature_clean:
+                signature_clean = signature_clean.split(",", 1)[1]
+            sig_bytes = base64.b64decode(signature_clean)
+            sig_filename = f"{pixel_pin_id}.png"
+            sig_path = os.path.join(SIGNATURE_DIR, sig_filename)
+            with open(sig_path, "wb") as f:
+                f.write(sig_bytes)
+            signature_url = f"/static/signatures/{sig_filename}"
+        except Exception:
+            signature_url = None
+
         digital_signature_manifest = {
             "c2pa_version": "1.3",
             "pixel_pin_id": pixel_pin_id,
+            "signature_url": signature_url,
             "signature_canvas_hash": hashlib.sha256(signature_canvas.encode()).hexdigest(),
             "cosplayer_id": str(cosplayer_id),
             "timestamp": current_time_iso,
@@ -219,6 +237,7 @@ async def list_pin_clusters(
     eps: float = Query(80.0, description="Bán kính phân cụm (đơn vị pixel 2D)"),
     min_points: int = Query(2, description="Số lượng điểm tối thiểu để cấu thành Cụm tròn"),
     event_id: Optional[uuid.UUID] = Query(None, description="Lọc theo ID sự kiện"),
+    event_name: Optional[str] = Query(None, description="Lọc theo tên sự kiện Fest"),
     work_title: Optional[str] = Query(None, description="Lọc theo tên tác phẩm nguyên tác"),
     alias_first_letter: Optional[str] = Query(None, description="Lọc theo chữ cái đầu nghệ danh"),
     db: AsyncSession = Depends(get_db)
@@ -233,6 +252,7 @@ async def list_pin_clusters(
             eps=eps,
             min_points=min_points,
             event_id=event_id,
+            event_name=event_name,
             work_title=work_title,
             alias_first_letter=alias_first_letter
         )
@@ -241,4 +261,54 @@ async def list_pin_clusters(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Lỗi truy vấn dữ liệu cụm bản đồ: {str(e)}"
+        )
+
+
+@router.get(
+    "/filters",
+    response_model=Dict[str, List[str]],
+    status_code=status.HTTP_200_OK,
+    summary="Lấy danh sách các giá trị bộ lọc thực tế trong CSDL (Events, Works, Letters)"
+)
+async def get_filter_options(db: AsyncSession = Depends(get_db)):
+    """
+    Truy vấn danh sách giá trị phân loại thực tế từ các Pin đã duyệt (APPROVED):
+    - events: danh sách event_name duy nhất (khác null/rỗng, sắp xếp A-Z)
+    - works: danh sách work_title duy nhất (sắp xếp A-Z)
+    - letters: danh sách alias_first_letter duy nhất (sắp xếp A-Z)
+    """
+    try:
+        events_query = select(CosplayPin.event_name).where(
+            CosplayPin.moderation_status == "APPROVED",
+            CosplayPin.event_name.is_not(None),
+            CosplayPin.event_name != ""
+        ).distinct().order_by(CosplayPin.event_name)
+        events_res = await db.execute(events_query)
+        events = [r[0] for r in events_res.all() if r[0]]
+
+        works_query = select(CosplayPin.work_title).where(
+            CosplayPin.moderation_status == "APPROVED",
+            CosplayPin.work_title.is_not(None),
+            CosplayPin.work_title != ""
+        ).distinct().order_by(CosplayPin.work_title)
+        works_res = await db.execute(works_query)
+        works = [r[0] for r in works_res.all() if r[0]]
+
+        letters_query = select(CosplayPin.alias_first_letter).where(
+            CosplayPin.moderation_status == "APPROVED",
+            CosplayPin.alias_first_letter.is_not(None),
+            CosplayPin.alias_first_letter != ""
+        ).distinct().order_by(CosplayPin.alias_first_letter)
+        letters_res = await db.execute(letters_query)
+        letters = [r[0] for r in letters_res.all() if r[0]]
+
+        return {
+            "events": events,
+            "works": works,
+            "letters": letters
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Lỗi truy vấn danh mục bộ lọc: {str(e)}"
         )

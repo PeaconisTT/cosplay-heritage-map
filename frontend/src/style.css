@@ -34,10 +34,94 @@ html, body, #app, #map {
   transform: scale(1.15);
 }
 
-/* Loại bỏ viền mặm định của DivIcon trong Leaflet */
-.custom-cluster-icon, .custom-single-icon {
+/* Loại bỏ viền mặc định của DivIcon trong Leaflet */
+.custom-cluster-icon, .custom-single-icon, .custom-draft-icon {
   background: transparent !important;
   border: none !important;
+}
+
+/* 3. Hiệu ứng phát sáng / nhấp nháy (Pulse Animation) cho Pin tạm thời */
+@keyframes draft-pulse-ring {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.6);
+    opacity: 0.2;
+  }
+  100% {
+    transform: scale(0.7);
+    opacity: 0.9;
+  }
+}
+
+.draft-pin-pulse {
+  animation: draft-pulse-ring 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* 4. Tùy chỉnh thanh cuộn cho Left Panel, Modal và Custom Dropdown */
+#left-panel-body::-webkit-scrollbar,
+#left-panel-content::-webkit-scrollbar,
+#upload-pin-form::-webkit-scrollbar,
+.custom-dropdown-menu::-webkit-scrollbar {
+  width: 5px;
+}
+
+#left-panel-body::-webkit-scrollbar-track,
+#left-panel-content::-webkit-scrollbar-track,
+#upload-pin-form::-webkit-scrollbar-track,
+.custom-dropdown-menu::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+#left-panel-body::-webkit-scrollbar-thumb,
+#left-panel-content::-webkit-scrollbar-thumb,
+#upload-pin-form::-webkit-scrollbar-thumb,
+.custom-dropdown-menu::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 9999px;
+}
+
+#left-panel-body::-webkit-scrollbar-thumb:hover,
+#left-panel-content::-webkit-scrollbar-thumb:hover,
+#upload-pin-form::-webkit-scrollbar-thumb:hover,
+.custom-dropdown-menu::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* 5. Tùy chỉnh Nút Zoom của Leaflet */
+.leaflet-control-zoom {
+  border: 1px solid #475569 !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4) !important;
+}
+
+.leaflet-control-zoom a {
+  background-color: #1e293b !important; /* slate-800 */
+  color: #f8fafc !important;            /* slate-50 */
+  border-bottom: 1px solid #475569 !important;
+  transition: all 150ms ease-out !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+}
+
+.leaflet-control-zoom a:last-child {
+  border-bottom: none !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background-color: #4f46e5 !important; /* indigo-600 */
+  color: #ffffff !important;
+  border-color: #6366f1 !important;
+}
+
+.leaflet-control-zoom a:active {
+  background-color: #3730a3 !important; /* indigo-800 */
+  transform: scale(0.94) !important;
 }
 /* Tùy chỉnh Popup Dark Mode cho Leaflet */
 .dark-popup .leaflet-popup-content-wrapper,
